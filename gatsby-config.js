@@ -5,7 +5,7 @@ module.exports = {
       options: {
         siteUrl: "https://knechtions.com/", // Used for sitemap generation
         manifestSettings: {
-          favicon: "./content/images/favicon.ico", // Path is relative to the root
+          favicon: "content/images/favicon.png", // Path is relative to the root
           siteName: "Knechtions Consulting", // Used in manifest.json
           shortName: "Knechtions", // Used in manifest.json
           startUrl: "/", // Used in manifest.json
