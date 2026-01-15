@@ -2,10 +2,6 @@
   "name": "Knechtions Consulting",
   "email": "contact@hans-knecht.com",
   "description": "Reach out to me for consulting services in the areas of cloud engineering, platform engineering, and DevOps/SRE work.",
-  "image": {
-    "src": "../../images/favicon.png",
-    "alt": "Knechtions Coding Logo"
-  },
   "socialProfiles": {
     "from": [
       "LinkedIn",
