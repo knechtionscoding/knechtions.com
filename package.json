@@ -10,7 +10,7 @@
     "serve": "gatsby serve"
   },
   "engines": {
-    "node": ">=20.0.0 <21"
+    "node": ">=20.0.0 <25"
   },
   "dependencies": {
     "gatsby": "^5.0.1",
