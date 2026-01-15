@@ -52,7 +52,7 @@
       "title": "Github Template with Github Best Practices",
       "description": "For developers who want to start a new project with best practices in mind. This template includes a README with a project overview, a CONTRIBUTING.md file, and a CODE_OF_CONDUCT.md file. It also includes tool integrations like Renovate, Github Actions with CI/CD pipelines, and other code scanning tools",
       "tags": [
-        "Besst Practices",
+        "Best Practices",
         "Developer Experience",
         "Security"
       ],
