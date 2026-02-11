@@ -2,6 +2,7 @@
   "name": "knechtions-consulting-website",
   "version": "1.0.0",
   "description": "Homepage for Knechtions Consulting",
+  "packageManager": "pnpm@10.23.0",
   "scripts": {
     "clean": "gatsby clean",
     "develop": "gatsby develop",
@@ -10,7 +11,8 @@
     "serve": "gatsby serve"
   },
   "engines": {
-    "node": ">=20.0.0 <25"
+    "node": ">=20.0.0 <25",
+    "pnpm": ">=10.0.0"
   },
   "dependencies": {
     "gatsby": "^5.0.1",
