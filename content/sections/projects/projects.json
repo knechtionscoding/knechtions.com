@@ -39,10 +39,6 @@
         {
           "type": "github",
           "url": "https://github.com/knechtionscoding/reference-architectures"
-        },
-        {
-          "type": "external",
-          "url": "https://fakegithubpagesurl.com"
         }
       ]
     },
