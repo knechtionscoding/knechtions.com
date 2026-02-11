@@ -10,7 +10,8 @@ Based on [Portfolio Minimal Theme on Github](https://github.com/konstantinmuenst
 
 #### Required
 
-- npm (20+)
+- pnpm (10+)
+- Node.js (20+)
 
 #### Recommended
 
@@ -19,8 +20,8 @@ Based on [Portfolio Minimal Theme on Github](https://github.com/konstantinmuenst
 ### Commands
 
 ```shell
-npm install
-gatsby develop
+pnpm install
+pnpm run develop
 ```
 
 ## Deployment
