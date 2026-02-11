@@ -1,6 +1,6 @@
 # knechtions.com
 
-Website for [knechtions.com](knechtions.com)
+Website for [knechtions.com](https://knechtions.com)
 
 ## Development
 
