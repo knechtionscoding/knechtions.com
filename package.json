@@ -21,6 +21,19 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "core-js",
+      "core-js-pure",
+      "es5-ext",
+      "gatsby",
+      "gatsby-cli",
+      "lmdb",
+      "msgpackr-extract",
+      "sharp"
+    ]
+  },
   "author": "Hans Knecht <contact@hans-knecht.com>",
   "license": "",
   "starter-name": "gatsby-starter-portfolio-minimal-theme",
