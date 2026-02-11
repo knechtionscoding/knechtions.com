@@ -1,6 +1,6 @@
 ---
 title: "Open Telemetry Collectors at Scale"
-description: "Ensuring Evicted pods don't hang around for ever"
+description: "Scaling OTEL to billions of events"
 date: "2026-02-11"
 categories:
     - "Tutorial"
