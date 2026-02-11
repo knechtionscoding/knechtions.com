@@ -10,8 +10,8 @@ Based on [Portfolio Minimal Theme on Github](https://github.com/konstantinmuenst
 
 #### Required
 
-- pnpm (10+)
-- Node.js (20+)
+- Bun (1.1+)
+- Node.js (24+)
 
 #### Recommended
 
@@ -20,8 +20,8 @@ Based on [Portfolio Minimal Theme on Github](https://github.com/konstantinmuenst
 ### Commands
 
 ```shell
-pnpm install
-pnpm run develop
+bun install
+bun run develop
 ```
 
 ## Deployment
