@@ -16,7 +16,7 @@ export default function IndexPage() {
       <Seo title="Knechtions Consulting" />
       <Page useSplashScreenAnimation>
         <HeroSection sectionId="hero" />
-        <ArticlesSection sectionId="articles" heading="Latest Articles" sources={['Medium']} />
+        <ArticlesSection sectionId="articles" heading="Latest Articles" sources={['Blog', 'Medium']} />
         <AboutSection sectionId="about" heading="About Knechtions Consulting" />
         <InterestsSection sectionId="details" heading="Details" />
         <ProjectsSection sectionId="best-practices" heading="Best Practices and Templates" />
