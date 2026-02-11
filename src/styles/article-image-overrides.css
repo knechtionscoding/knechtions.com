@@ -1,0 +1,10 @@
+article .gatsby-resp-image-wrapper,
+article .gatsby-resp-image-background-image {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+article .gatsby-resp-image-image {
+  height: auto !important;
+  object-fit: contain !important;
+}
