@@ -82,7 +82,9 @@ Pre-warming means pulling the container image before you need it. This could be 
 Here I found a reasonable amount of guidance.
 
 1. [There's a nice thread on bottlerocket's github about using an EBS volume with the container images needed for a node](https://github.com/bottlerocket-os/bottlerocket/discussions/2023), also an [article from AWS](https://aws.amazon.com/blogs/containers/reduce-container-startup-time-on-amazon-eks-with-bottlerocket-data-volume/). However, the image injected is too stale for us. The images that are large for us contain models that change and cythonized python code. Both of which means that any EBS volume we snapshot would only share some of the layers with the ones pulled at container start.
+
 2. [AWS has guidance on using SSM and eventbridge to fetching images on container push](https://aws.amazon.com/blogs/containers/start-pods-faster-by-prefetching-images/). While this is AWS specific, we could build something similar in azure land, or cross cloud, for example a daemonset that runs on every node, looks for image updates, and then executes image pulls. This solution would be inefficient, pulling lots and lots of releases that may not land in that specific environment, and means we need to adjust image pruning, how much disk we have on the node, etc. Possible, but not my first inclination.
+
 3. [The Node Readiness Controller, which is very cool, allows you to pre-fetch images on node boot](https://kubernetes.io/blog/2026/02/03/introducing-node-readiness-controller/). While an awesome new project, and something we'll use for other parts of our stack, doesn't help here because it moves the time spent waiting from container start to node start.
 
 ### Pull Optimizations
@@ -95,9 +97,9 @@ We have 2 different types of tooling available to us here:
 
 P2P Tooling ([DragonFly](https://d7y.io/), [Spegel](https://spegel.dev/), [Kraken](https://github.com/uber/kraken/)), and parallel pull tooling ([stargz](https://github.com/containerd/stargz-snapshotter)).
 
-For the P2P tooling, we have tools that fall into two camps: tools that modify the ContainerD config directly (Spegel and DragonFly) and tools that run node local container registries for optimized caching (Kraken). I ran into my first big issue at this point. Bottlerocket doesn't allow for configuration of those ContainerD settings[[1]][https://github.com/spegel-org/spegel/issues/47]([2)](<https://github.com/bottlerocket-os/bottlerocket/issues/1963>). So onto Kraken. Kraken works by deploying a node local contianer cache that then uses the other nodes as peers and the upstream registry to optimize container pulls.
+For the P2P tooling, we have tools that fall into two camps: tools that modify the ContainerD config directly (Spegel and DragonFly) and tools that run node local container registries for optimized caching (Kraken). I ran into my first big issue at this point. Bottlerocket doesn't allow for configuration of those ContainerD settings[[1](https://github.com/spegel-org/spegel/issues/47)][[2](https://github.com/bottlerocket-os/bottlerocket/issues/1963)]. So onto Kraken. Kraken works by deploying a node local contianer cache that then uses the other nodes as peers and the upstream registry to optimize container pulls.
 
-However, we run into our second problem here. Spegel and Kraken both don't support floating tags very well. They both [recommend](https://spegel.dev/docs/guides/updating-latest-tag/)deploying something like Kyverno or k8s-digester to mutate pods from floating tags to digests. That's not a massive deal, but a little annoying. DragonFly gets around this by only operating at the digest layer. Rather than intercepting the whole image pull, it intercepts only the layer requests.
+However, we run into our second problem here. Spegel and Kraken both don't support floating tags very well. They both [recommend](https://spegel.dev/docs/guides/updating-latest-tag/) deploying something like Kyverno or k8s-digester to mutate pods from floating tags to digests. That's not a massive deal, but a little annoying. DragonFly gets around this by only operating at the digest layer. Rather than intercepting the whole image pull, it intercepts only the layer requests.
 
 #### DragonFly
 
@@ -153,9 +155,9 @@ Images still pulled, Kraken was serving them, and I could see the P2P connection
 
 Here's the graph. Kraken was turned on on 2/10
 
-[Diagram showing p95 image pull times](../../images/image-pull-times-kraken-p95.png)
+![Diagram showing p95 image pull times](../../images/image-pull-times-kraken-p95.png)
 
-[Diagram showing p99 image pull times](../../images/image-pull-times-kraken-p99.png)
+![Diagram showing p99 image pull times](../../images/image-pull-times-kraken-p99.png)
 
 Imagine my surprise when… image pull times appear to have gotten worse. Not statistically significantly worse, but just looking at the graph you can see that we had a lot more long pull times in both p95 and p99.
 
@@ -173,15 +175,15 @@ I turned it on, let it run, and... No difference
 
 Before:
 
-[P95 Before](../../images/parallel-image-pulls-p95-before-azure.png)
+![P95 Before](../../images/parallel-image-pulls-p95-before-azure.png)
 
-[P99 Before](../../images/parallel-image-pulls-p99-before-azure.png)
+![P99 Before](../../images/parallel-image-pulls-p99-before-azure.png)
 
 After:
 
-[P95 After](../../images/parallel-image-pulls-p95-after-azure.png)
+![P95 After](../../images/parallel-image-pulls-p95-after-azure.png)
 
-[P99 After](../../images/parallel-image-pulls-p99-after-azure.jpeg)
+![P99 After](../../images/parallel-image-pulls-p99-after-azure.jpeg)
 
 In AWS, however, [it was more complicated](https://aws.amazon.com/blogs/containers/introducing-seekable-oci-parallel-pull-mode-for-amazon-eks/). In order to support it [we needed to enable soci as the snapshotter](https://bottlerocket.dev/en/os/1.53.x/api/settings/container-runtime-plugins/) and then tune it for parallel pulls.
 ...
