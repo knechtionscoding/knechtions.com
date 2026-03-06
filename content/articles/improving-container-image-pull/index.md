@@ -1,7 +1,7 @@
 ---
 title: "Decreasing Container Image Pull Times"
 description: "Improving container image pull times on kubernetes"
-date: "2026-02-15"
+date: "2026-03-06"
 categories:
     - "Tutorial"
     - "Technical"
