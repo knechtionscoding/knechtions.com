@@ -57,12 +57,19 @@ There are a few key pieces of technical constraints that introduces:
 1. In AWS the base EKS node uses bottlerocket and in Azure the base AKS node uses AzureLinux. I'm not strictly limited to using these two OSes, but if I move off of them, I need a really good reason to. It would change things like node start-up time, security posture, and a lot more overall configuration.
 1. Floating tags are used. While @latest isn't used tags that correspond easily to versions are. I need something that can handle looking at digests not tags.
 1. Tools like [keel](https://keel.sh/) need to work. Because we use floating tags, ensuring rollouts are not random is important. Tools like keel are used to help ensure we stay on a schedule and rotate at pods roughly in concert.
-1. but if I move off of them, I need a really good reason to. It would change things like node start-up time, security posture, and a lot more overall configuration.
+1. We currently used Bottlerocket and Azure Linux in EKS and AKS respectively. Moving off of those AMIs is possible, but, I need a really good reason to. It would change things like node start-up time, security posture, and a lot more overall configuration.
 1. We needed something that worked in our cloud/saas environments but also in customer environments for self-hosted without significant deviations/complexity.
 
 ## Previous Optimizations
 
 The primary previous optimization we had already made in this area were regional endpoints and registries. In AWS, we use ECR endpoints local to the vpc the nodes are in and pull from an ECR registry that is local to the region. In Azure, we use an ACR registry that lives in the same region as the AKS nodes. These (changes?), despite storing the same image duplicitively, was a big cost savings measure because of data transfer costs pulling from a centralized repo.
+
+This can be implemented in one of two ways:
+
+1. Update the image repositories in your k8s manifests directly for each cluster/region. This works best when you either have central control of all images or have only a single region
+1. Use something like [Kyverno](https://kyverno.io/) to rewrite image repositories to their local region.
+
+You also have to ensure, if building images, to push to each region (you can also use mirrors, if you don't use floating tags).
 
 ## Exploration of Options
 
@@ -159,19 +166,59 @@ Here's the graph. Kraken was turned on on 2/10
 
 ![Diagram showing p99 image pull times](../../images/image-pull-times-kraken-p99.png)
 
-Imagine my surprise when… image pull times appear to have gotten worse. Not statistically significantly worse, but just looking at the graph you can see that we had a lot more long pull times in both p95 and p99.
+We see some improvement here, but the top level time hasn't gotten any better. We see a slightly worsened p95 and an improved p99.
 
-I actually don't know why. Still don't. My best guess is that because of the node local registry the decompression time goes up.
+Kubelet metric doesn't break down the network calls from the decompression. [EC2 Networking is symmetrical upload and download](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-network-bandwidth.html). If we already had maxed out our download speed talking to ECR, and decompression time goes up because of the node local cache kraken introduces (nginx), then we would see a more erratic pattern and higher p99 and p95 times.
 
-See the Kubelet metric doesn't break down the network calls from the decompression. [EC2 Networking is symmetrical upload and download](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-network-bandwidth.html). If we already had maxed out our download speed talking to ECR, and decompression time goes up because of the node local cache kraken introduces (nginx), then we would see a more erratic pattern and higher p99 and p95 times.
-
-#### Parallel Image Pulls (SOCI)
+#### Parallel Image Pulls
 
 The next improvement one can look at is the ability for parallel image pulls. Both [Azure](https://learn.microsoft.com/en-us/troubleshoot/azure/azure-kubernetes/availability-performance/container-image-pull-performance) and [AWS](https://aws.amazon.com/blogs/containers/introducing-seekable-oci-parallel-pull-mode-for-amazon-eks/) support seekable OCI parallel image pull.
 
-In Azure enabling it is relatively easy. [Happens on the Container Registry](https://learn.microsoft.com/en-us/troubleshoot/azure/azure-kubernetes/availability-performance/container-image-pull-performance).
+In Azure we were already using it because we were past 1.31. In AWS, however, [it was more complicated](https://aws.amazon.com/blogs/containers/introducing-seekable-oci-parallel-pull-mode-for-amazon-eks/). In order to support it [we needed to enable soci as the snapshotter](https://bottlerocket.dev/en/os/1.53.x/api/settings/container-runtime-plugins/) and then tune it for parallel pulls.
 
-I turned it on, let it run, and... No difference
+With Bottlerocket this wasn't terribly hard, however.
+
+We use karpenter to handle node provisioning in EKS. So on the node class we configured:
+
+```yaml
+userData: |
+    [settings.kubernetes]
+    registry-qps = 50
+    registry-burst = 100
+
+    [settings.container-runtime]
+    snapshotter = "soci"
+    [settings.container-runtime-plugins.soci-snapshotter]
+    pull-mode = "parallel-pull-unpack"
+    [settings.container-runtime-plugins.soci-snapshotter.parallel-pull-unpack]
+    max-concurrent-downloads-per-image = 10
+    concurrent-download-chunk-size = "16mb"
+    max-concurrent-unpacks-per-image = 10
+    discard-unpacked-layers = true
+
+    # bind container resources and SOCI snapshotter root dir (/var/lib/soci-snapshotter) to instance store fast NVMe disks
+    [settings.bootstrap-commands.k8s-ephemeral-storage]
+    commands = [
+        ["apiclient", "ephemeral-storage", "init"],
+        ["apiclient", "ephemeral-storage" ,"bind", "--dirs", "/var/lib/containerd", "/var/lib/kubelet", "/var/log/pods", "/var/lib/soci-snapshotter"]
+    ]
+    essential = true
+    mode = "always"
+```
+
+After enabling parallel image pulls we saw mixed a mixed bag (Parallel image pull was enabled on the 14th):
+
+![Diagram showing p95 image pull times](../../images/aws-parallel-image-pulls-95.png)
+
+![Diagram showing p99 image pull times](../../images/aws-parallel-image-pulls-99.png)
+
+We see an initial massive spike in image pull times but then we calm down and appear to have relatively low/stable performance until we rolled some nodes on the 21st. However, we still managed to cut the image pull time in half for p95.
+
+#### Artifact Streaming Service (Azure)
+
+Artifact Streaming Service in Azure is similar to soci image formatting and lazy loading. In Azure enabling it is relatively easy. [Happens on the Container Registry](https://learn.microsoft.com/en-us/troubleshoot/azure/azure-kubernetes/availability-performance/container-image-pull-performance).
+
+I turned it on, let it run, and... No difference.
 
 Before:
 
@@ -185,5 +232,52 @@ After:
 
 ![P99 After](../../images/parallel-image-pulls-p99-after-azure.jpeg)
 
-In AWS, however, [it was more complicated](https://aws.amazon.com/blogs/containers/introducing-seekable-oci-parallel-pull-mode-for-amazon-eks/). In order to support it [we needed to enable soci as the snapshotter](https://bottlerocket.dev/en/os/1.53.x/api/settings/container-runtime-plugins/) and then tune it for parallel pulls.
-...
+There isn't a massive improvement
+
+Here I learned that you need to push new images in order for it to take effect. After doing that we see improvements. Artifact Streaming was enabled on the 16th.
+
+![P95 Total](../../images/p95-azure-parallel-image-pulls.png)
+![P99 Total](../../images/p99-azure-parallel-image-pulls.png)
+
+In both p99 and p95 we see fewer spikes and less randomness. Improvement, but not amazing.
+
+However, here is where I discoverd a better metric to measure and one that shows the impact.
+
+![Pod Start Azure](../../images/pod-start-time-azure.png)
+
+Here we see that pod image pull time can be long but because we are in parallel starting the container we all of a sudden get a much improved pod start time.
+
+#### SOCI Image Format
+
+There's a second part to the Seekable OCI format that allows for lazy loading. This is similar to Artifact Streaming for Azure, but enabled for AWS. In order to use the SOCI format you have to build images with indexes attached. This means you need to install the soci CLI in your build ENV and then run `soci convert` on the image. The instructions [are here](https://github.com/awslabs/soci-snapshotter/blob/main/docs/build.md)
+
+Besides installing the CLI, you also need to make sure the image is accessible to soci (it will not pull an image on its own), and you need to run it as root. You don't need to build as root (as long as you load the image into the containerd namespace that soci will have access too), and once you are done you can push with docker without sudo.
+
+Psuedocode with it:
+
+```bash
+docker build . -t cool:tag
+sudo soci convert --namespace moby
+docker push cool:tag
+```
+
+Once this has been pushed any nodes with SOCI snapshotter installed can start lazy loading images. For us this took a few days to fully roll out. But after a few days we got some very promising results. (Soci images rolled out on the 20th)
+
+![P95 Total](../../images/aws-sociimage-pulls-95.png)
+![P99 Total](../../images/aws-sociimage-pulls-99.png)
+
+## Conclusion
+
+In conclusion, we tried a bunch of options:
+
+1. P2P Image pulling
+1. Parallel Image Pulls
+1. Image Streaming
+
+P2P Image Pulling ended up not working/solving the issue.
+
+Parallel image pulls helped some!
+
+Image Streaming helped even more!
+
+We ended up not seeing a signifcant decrease in the image pull time, but that's okay because the container start time went down which is what we actually care about. Note: I only measured to started rather than running because dealing with the application logic at boot is out of scope for this article.
