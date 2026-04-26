@@ -1,7 +1,8 @@
 import React from "react";
 import { Link } from "gatsby";
 import { GatsbyImage } from "gatsby-plugin-image";
-import { Page, Seo, AuthorSnippet } from "gatsby-theme-portfolio-minimal";
+import { Page, Seo } from "gatsby-theme-portfolio-minimal";
+import { AuthorSnippet } from "../../components/AuthorSnippet";
 import { NewsletterForm } from "../../../components/NewsletterSection";
 import * as classes from "./style.module.css";
 
