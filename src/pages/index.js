@@ -9,6 +9,7 @@ import {
   ProjectsSection,
   Seo,
 } from "gatsby-theme-portfolio-minimal";
+import { NewsletterSection } from "../components/NewsletterSection";
 
 export default function IndexPage() {
   return (
@@ -20,6 +21,7 @@ export default function IndexPage() {
         <AboutSection sectionId="about" heading="About Knechtions Consulting" />
         <InterestsSection sectionId="details" heading="Details" />
         <ProjectsSection sectionId="best-practices" heading="Best Practices and Templates" />
+        <NewsletterSection sectionId="newsletter" heading="Stay in the Loop" />
         <ContactSection sectionId="github" heading="Issues?" />
       </Page>
     </>
