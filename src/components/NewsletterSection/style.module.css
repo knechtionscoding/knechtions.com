@@ -1,0 +1,91 @@
+.Section {
+    width: 100%;
+    height: auto;
+    background: var(--background-color);
+    scroll-margin-top: 60px;
+}
+
+.ContentWrapper {
+    width: 100%;
+    height: 100%;
+    max-width: var(--page-width);
+    margin: 0 auto 8rem auto;
+    padding: var(--page-padding);
+}
+
+.Heading {
+    margin: 0 0 2rem 0;
+    font-size: 1.75rem;
+    line-height: 2.25rem;
+}
+
+.Form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 32rem;
+}
+
+.Label {
+    font-size: 1rem;
+    color: var(--text-color);
+}
+
+.InputRow {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.Input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border: 2px solid var(--tertiary-color);
+    border-radius: var(--border-radius);
+    background: var(--background-color);
+    color: var(--text-color);
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.Input:focus {
+    border-color: var(--primary-color);
+}
+
+.Button {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    background-color: var(--primary-color);
+    color: var(--background-color);
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+}
+
+.Button:hover,
+.Button:active {
+    opacity: 0.85;
+}
+
+.PoweredBy {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--subtext-color);
+}
+
+.PoweredBy a {
+    color: var(--subtext-color);
+}
+
+@media (max-width: 480px) {
+    .InputRow {
+        flex-direction: column;
+    }
+
+    .Button {
+        width: 100%;
+    }
+}
