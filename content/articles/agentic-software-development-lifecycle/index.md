@@ -15,7 +15,15 @@ keywords:
 
 I've been working in the tech world since 2014ish. I've been a sysadmin, backend developer, devops engineer, platform engineer, cloud engineer, and site reliability engineer. I've worked for very large companies like Capital One and Cloudera. I've worked for very small companies like Anomalo. I've worked on individual pet windows servers and massive cattle container farms. I have helped rack and stack servers and  I've helped people move away from SVN, manually copying war and jar files onto tomcat servers manually to ship software, and copying files onto S3 to deploy a website. I generally feel like I've seen most types of software development practices good and bad. And using Coding Agents represents fundamental shifts in a few ways and in many others it means no changes.
 
-About 3 months ago Anomalo embarked on a project called AI Sensible Defaults. The project was meant to help the engineering org figure out how we should be using LLMs, where our processes were deficient, what needed to change, and where was inappropriate to use LLMs. It also expanded into building [Gravity](https://knechtions.com/building-claude-agents/). The following list is not comprehensive, nor do I claim we or I have all the answers, but the following represent a list of meaningful differences that I have observed, actions implemented, and lessons learned.
+About 3 months ago Anomalo embarked on a project called AI Sensible Defaults. The project was meant to help the engineering org figure out how we should be using LLMs, where our processes were deficient, what needed to change, and where was inappropriate to use LLMs. It also expanded into building [Gravity](https://knechtions.com/building-claude-agents/). Anomalo has been using LLMs for a while, but in the last 3 months has kicked it into high gear pushing extremely fast and increasing throughput massively. From 150 prs a week to more than 500 prs. From a human approval rate of 100% to right around 30%. We have seen the Cycle Time go down. We have seen PRs in progress go down. And we haven't seen an increase in incidents or patches per PR (We've actually seen this go down).
+
+![Number of PRs per Week](../../images/prs-per-week.png)
+
+![PRs In Progress per Week](../../images/prs-in-progress.png)
+
+![Cycle Time](../../images/cycle-time.png)
+
+The following list is not comprehensive, nor do I claim we or I have all the answers, but the following represent a list of meaningful differences that I have observed, actions implemented, and lessons learned.
 
 Note: Throughout the article I will refer to actors. Actors represent either a human or LLM who is writing code.
 
