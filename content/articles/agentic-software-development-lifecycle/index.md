@@ -17,9 +17,15 @@ I've been working in the tech world since 2014ish. I've been a sysadmin, backend
 
 About 3 months ago Anomalo embarked on a project called AI Sensible Defaults. The project was meant to help the engineering org figure out how we should be using LLMs, where our processes were deficient, what needed to change, and where was inappropriate to use LLMs. It also expanded into building [Gravity](https://knechtions.com/building-claude-agents/). Anomalo has been using LLMs for a while, but in the last 3 months has kicked it into high gear pushing extremely fast and increasing throughput massively. From 150 prs a week to more than 500 prs. From a human approval rate of 100% to right around 30%. We have seen the Cycle Time go down. We have seen PRs in progress go down. And we haven't seen an increase in incidents or patches per PR (We've actually seen this go down).
 
+This is the graph of PRs per week over the last 5ish months:
+
 ![Number of PRs per Week](../../images/prs-per-week.png)
 
+PRs in progress over the last 5ish months:
+
 ![PRs In Progress per Week](../../images/prs-in-progress.png)
+
+Cycle time over the last 5ish months:
 
 ![Cycle Time](../../images/cycle-time.png)
 
