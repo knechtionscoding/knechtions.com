@@ -65,13 +65,30 @@ Then we opened it up to whole company to start writing agents. They have written
 
 Right around this time Anthropic announced [Managed Agents](https://www.anthropic.com/engineering/managed-agents). So they clearly had the same goals and problems to solve as we did.
 
+Despite Anthropic's launch of Claude Agents there are a litany of benefits to Kelos for us:
+
+1. Workspaces allow us to define a repo and ensure we are scoping and checking out the right code automatically
+1. The Agent Config allows us to configure shared prompts and guardrails, shared MCP servers, and other pre-defined configuration
+1. The TaskSpawners allow us centralized control over connections to other tools, well-known secrets, ability to configure things like the K8s service account being used which means we can give access to and control what k8s resources agents have access to.
+1. Running in our infrastructure means we can give it read only access to cloud environments. This means we can get cloud cost data or information about our saas environment, give it easy access to logs, or other observability tooling using our normal processes.
+
 Since launching it our internal platform has reviewed more than 1700 PRs, runs more than 200 jobs (answering slack questions, upgrading dependencies, writing code) a day, has had more than 100 PRs merged, has more than 400 mentions in public Slack channels (it also responds to DMs, but we can't measure that), and many more cool stats.
 
-We have since added inference profiles as we run on bedrock, are working on a CLI and UI so that people can play with Claude code locally and then kick off agents during their [night shift](https://jamon.dev/night-shift), and improving Kelos itself.
+We have since added inference profiles as we run on bedrock, gave access to the Kelos CLI for engineers to run tasks from their local machine enabling [night shift](https://jamon.dev/night-shift) mode. Here are most of the agents currently running:
+
+1. Dependency Review -> Reviews Dependabot or Renovate upgrades, parses the release notes and approves when relevant
+2. CVE Dependency Updater -> Reads from our container scanning tool, looks for reported CVEs in dependencies and paths, and then submits updates for them and notifies us in Slack
+3. Docs Maintenance -> Does a review for old or out-dated documentation in the code or product docs and submits updates for them.
+4. Compliance Check -> Connects to our automated compliance monitor (Think Drata, AWS Config, Vanta) and gives us a report and fixes any code or IaC based issues.
+5. General Agent -> Responds in Slack, Github, and Linear to mentions and answers questions, creates PRs, and can use any existing Claude Skills or Commands we have in repo.
+6. Product Feedback for Gravity -> On each of our agents we ask Gravity to tell us what would make it better or its job easier. This Agent runs daily and searches slack and github for those suggestions, synthesizes them and creates tickets for us to evaluate.
+7. Product Feedback -> For the core Anomalo product collect feedback given from our customers, sales engineers, customer success agents, and everyone else and then disambiguate and synthesize the feedback with linked tickets for Product to review (including links back to original feedback).
+8. Review Synthesizer -> Reviews all PRs that were closed in the last week, look for all review comments posted by humans or ai review agents, and then look for patterns or comments that are repeated enough and then either create linter configuration, Claude rules, or pre-commit hooks to enforce the requirements. (Side note: This has been a massive boon of LLMs and agentic actors. Because they never get bored they will force you to write down the tribal knowledge that otherwise would be communicated only in PR reviews. This knowledge is incredibly vital and important and frequently is only communicated from SMEs to others in PR review or slack channels about the PR. This brings the knowledge to light.)
+9. Customer Answer Bot -> Reads incoming customer tickets and messages and provides a private response (only visible to the Anomalo Employee working the ticket or looking at the message) as a best effort and provide context. This doesn't respond directly to the customer but rather tries searching our complete knowledge base, code base, previous ticket history, and slack, to give a first pass answer.
 
 ## Learnings
 
-1. We very quickly got adoption. People wanted to use it ASAP.
+1. We very quickly got adoption. People wanted to use it ASAP. We had people from all over the company wanting to write agents. Operations, Product, Engineering, etc all wanted to write agents for their use.
 2. Meeting people where they were was important. Slack is by far our most used interaction point. I have two very talented coworkers (Jasmine and Kristian) who put a lot of work into making Slack a really cool user experience. The agent will provide back streaming updates on what it is doing, how it is doing it, and then ask questions when needed. This has driven usage significantly
 3. Being able to run it on our own infra has expanded the tools and capabilities we can give it access too. It extremely carefully vetted read access to our observability tools, knoweldge base, security scanning tools, Slack, and cloud environments. This greatly increases the efficacy of the tooling.
 4. Optimizing for cold start time isn't worth it yet. We run the agents inside our own Dev Container images which are rather large as they contain our full dev dependencies and tooling. They are around 4Gb in size. However, that's okay because generally we have already pulled that image onto the node in question and we spent a lot of time optimizing the [image pull times](https://knechtions.com/improving-container-image-pull/)
@@ -79,5 +96,5 @@ We have since added inference profiles as we run on bedrock, are working on a CL
 6. The compute needed for this is surprisingly small. Most of the cost is in tokens.
 7. With most of the cost in tokens providing guardrails and declarative and idiomatic methods for the agent to do things is important. You shouldn't just ask it to search Slack. Give it a script it can run. Give it your package manager/tooling of choice available so it doesn't waste tokens reinventing the wheel. Install [pre-commit hooks](https://github.com/j178/prek) into the environment so that it cannot push poorly formated code or secrets.
 8. Telemetry remains important. Seeing how people are using our internal platform is incredibly important so we can solve problems people are running into.
-9. We can self-evaluate with the agents. The final line of the prompt in the slack responder agents is to tell us what would have made Gravity's job easier. We have another agent that daily aggregates that feedback and puts it into Linear tickets for us to work on.
-10. Agents aren't solving all of our problems. Rather it is forcing us to solve problems we would hit at scale earlier in the process. Both operationally and organizationally. But again, another post for another time.
+9. We can self-evaluate with the agents. The final line of the prompt in the slack responder agents is to tell us what would have made Gravity's job easier. We have another agent that aggregates that feedback and puts it into Linear tickets for us to work on.
+10. Agents aren't solving all of our problems. Rather it is forcing us to solve problems we would hit at scale earlier in the process. Both operationally and organizationally. Instead of hitting a problem at 100 engineers or 500 engineers we are now hitting it at 20 engineers. This is a whole separate set of challenges.
