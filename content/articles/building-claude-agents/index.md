@@ -85,6 +85,10 @@ We have since added inference profiles as we run on bedrock, gave access to the 
 7. Product Feedback -> For the core Anomalo product collect feedback given from our customers, sales engineers, customer success agents, and everyone else and then disambiguate and synthesize the feedback with linked tickets for Product to review (including links back to original feedback).
 8. Review Synthesizer -> Reviews all PRs that were closed in the last week, look for all review comments posted by humans or ai review agents, and then look for patterns or comments that are repeated enough and then either create linter configuration, Claude rules, or pre-commit hooks to enforce the requirements. (Side note: This has been a massive boon of LLMs and agentic actors. Because they never get bored they will force you to write down the tribal knowledge that otherwise would be communicated only in PR reviews. This knowledge is incredibly vital and important and frequently is only communicated from SMEs to others in PR review or slack channels about the PR. This brings the knowledge to light.)
 9. Customer Answer Bot -> Reads incoming customer tickets and messages and provides a private response (only visible to the Anomalo Employee working the ticket or looking at the message) as a best effort and provide context. This doesn't respond directly to the customer but rather tries searching our complete knowledge base, code base, previous ticket history, and slack, to give a first pass answer.
+10. FE Design Review -> Ensures we are following our own style guide, hooks into figma to make sure we are using the correct design libraries and components.
+11. Improvement Synthesizer -> One of the final prompts in all our agents is having it tell us what they need to do its job better. Collecting that into actionable feedback is the job of Improvement Synthesizer
+
+And many, many more.
 
 ## Learnings
 
