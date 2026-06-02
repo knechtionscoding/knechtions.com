@@ -26,5 +26,15 @@ module.exports = {
         },
       },
     },
+    {
+      resolve: `gatsby-plugin-google-gtag`,
+      options: {
+        trackingIds: [process.env.GA_MEASUREMENT_ID], // your G-XXXXXXXXXX
+        pluginConfig: {
+          head: true,        // put the tag in <head>
+          respectDNT: true,  // honor Do Not Track
+        },
+      },
+    },
   ],
 };
