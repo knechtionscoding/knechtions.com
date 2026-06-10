@@ -1,0 +1,27 @@
+---
+title: "Top 10 SDLC Agents for improving velocity"
+description: "What agents have demonstrated usefulness in increasing velocity without impacting reliability rates"
+date: "2026-06-10"
+categories:
+    - "Discussion"
+    - "AI"
+    - "LLM"
+keywords:
+    - "AI"
+    - "LLM"
+---
+
+## Introduction
+
+There are a lot of possible agents we could write. The possibilities are endless. However, a lot of agents aren't worth it. Or burn tokens without meaningfully impacting engineering velocity. This is partially caused by the [false summit](https://background-agents.com/). Individual speed and increasing it doesn't increase organizational velocity. If I as an engineer submit 10x PRs but no one on my team has time to review, or I don't have time to test, or CI falls over, or deploys don't happen fast enough, or change control slows me down, or any number of other things happen in the process then velocity hasn't actually increased. Generating code, while not cheap, was not the hard part in a pre-agentic world. Nor was it really ever the bottleneck. Over the last 4 months I have had the opportunity to both build a background agents platform for Anomalo and observe very high performing teams implement all kinds of agents to help speed up their workflows. The following are the 10 most helpful coding workflow agents we have implemented.
+
+Note: All of the following agents have been implemented using [kelos](https://github.com/kelos-dev/kelos/) so the triggers and actions available to us are based on that.
+
+## Top 10
+
+1. Slack One-Shot Agent: This is a generic agent that has access to our codebase, our tools, pre-commit hooks, observability, product docs, etc. This means we can, from any channel or workflow, have the agent perform a one shot request. Our success rate for these kinds of PRs is north of 90%. With just bare claude it was around 50%. Primarily, not because of context, but because of tooling. Having the agent have access to our pre-commit hooks, testing environments, code-style guides, and CI logs/jobs materially changed how frequently a one shot PR succeeds
+2. PR Approval/Risk-Assessment: As previously discussed in [Building an Internal Agentic Platform](../building-claude-agents/index.md) and [Software Development in an Agentic World](../agentic-software-development-lifecycle/index.md) the single biggest blocker as getting approvals on PRs. Introducing an agent that used the existing code base to determine the riskiness of an individual PR out of 5. And if a 4 or 5 auto-approve. Tip: Don't overspecify what is risky. It will bias the agent towards only considering those formed statements as risky rather than the overall determination.
+3. Nightshift Orchestrators: Jamon Holmgren details a mode of agentic development called [night-shift](https://jamon.dev/night-shift) in which they, during the day, write up specs and projects, and then at night the agent will implement the spec and then the artifacts can be reviewed the next morning. Combining this with background agents is incredibly powerful. Each employee at Anomalo can have a background night-shift set of agents operating for them.
+4. Babysitter: Babysitter can be told to watch a PR. When it babysits a PR it will resolve review comments, fix any tests that fail, and merge main as appropriate. This means an engineer can add the initial implementation, set the label, and then come back to the PR later and have it be ready for merge. Anomalo has a very large test suite against all the possible datasources and combinations of configuration. Somewhere north of 40,000 tests. While we use testmon and other tools to intelligently select which tests to run it is difficult to track. Babysitter makes sure that engineers don't burn time just checking CI before merge.
+5. Test Deduplicator: Removing bad tests and dead code is important for the long term maintenance and health of the codebase and pipeline. Here we have prompted the agent to pick a subdirectory of tests/ go deep into it and scan for duplications. Then run a script that will verify that coverage hasn't changed after removal. Example guidance: `Target tests that can be safely removed or combined: identical assertions on the same code path, strict subsets of broader tests, or closely related cases that read better as a single parametrized test.`
+6. Review Synthesizer: The code style guide and review guide is, in my experience, maintained by a sub-set of engineers. However, everyone leaves reviews on PRs. Those two groups are not identical. The Review Synthesizer looks at all closed PRs in the last week, puts together the top 3 things that were repeated and then puts together either a linter rule, guidance for actors (human or AI), or pre-commit/push hooks and then puts together a PR for them. This hopefully dedupes
