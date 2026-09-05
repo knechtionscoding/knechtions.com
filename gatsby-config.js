@@ -1,3 +1,5 @@
+const gaMeasurementId = process.env.GA_MEASUREMENT_ID;
+
 module.exports = {
   plugins: [
     {
@@ -26,15 +28,17 @@ module.exports = {
         },
       },
     },
-    {
+    // Only registered when GA_MEASUREMENT_ID is set; an unset var would make
+    // trackingIds `[undefined]`, which fails plugin option validation.
+    gaMeasurementId && {
       resolve: `gatsby-plugin-google-gtag`,
       options: {
-        trackingIds: [process.env.GA_MEASUREMENT_ID], // your G-XXXXXXXXXX
+        trackingIds: [gaMeasurementId], // your G-XXXXXXXXXX
         pluginConfig: {
           head: true,        // put the tag in <head>
           respectDNT: true,  // honor Do Not Track
         },
       },
     },
-  ],
+  ].filter(Boolean),
 };
