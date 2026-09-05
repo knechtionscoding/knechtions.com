@@ -17,9 +17,12 @@
   "dependencies": {
     "gatsby": "^5.0.1",
     "gatsby-plugin-google-gtag": "^5.16.0",
-    "gatsby-theme-portfolio-minimal": "latest",
+    "gatsby-theme-portfolio-minimal": "4.6.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
+  },
+  "overrides": {
+    "sanitize-html": "2.17.1"
   },
   "author": "Hans Knecht <contact@hans-knecht.com>",
   "license": "",

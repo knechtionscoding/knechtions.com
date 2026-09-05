@@ -1,4 +1,7 @@
-const gaMeasurementId = process.env.GA_MEASUREMENT_ID;
+// GA4 measurement ID for knechtions.com. Public by nature (it ships in the
+// page), so it lives here rather than in an env var -- an unset var previously
+// made trackingIds `[undefined]` and failed the build.
+const GA_MEASUREMENT_ID = "G-K355DYR113";
 
 module.exports = {
   plugins: [
@@ -20,25 +23,20 @@ module.exports = {
           path: "/blog", // Defines the slug for the blog listing page
           usePathPrefixForArticles: false, // Default true (i.e. path will be /blog/first-article)
         },
-        googleAnalytics: {
-          // If set, the Google Analytics integration is enabled
-          trackingId: 'G-Y1VJSLGR2S', // e.g. UA-XXXXXX-X
-          anonymize: true, // Default is true
-          environments: ['production'], // Default ["production"]
-        },
+        // NOTE: intentionally no `googleAnalytics` option here. The theme routes
+        // it through gatsby-plugin-gdpr-cookies, which would emit a *second*
+        // tag alongside the gtag plugin below. Analytics is configured once, there.
       },
     },
-    // Only registered when GA_MEASUREMENT_ID is set; an unset var would make
-    // trackingIds `[undefined]`, which fails plugin option validation.
-    gaMeasurementId && {
+    {
       resolve: `gatsby-plugin-google-gtag`,
       options: {
-        trackingIds: [gaMeasurementId], // your G-XXXXXXXXXX
+        trackingIds: [GA_MEASUREMENT_ID],
         pluginConfig: {
           head: true,        // put the tag in <head>
           respectDNT: true,  // honor Do Not Track
         },
       },
     },
-  ].filter(Boolean),
+  ],
 };
